@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $notes = $_POST['notes'];
         $date = date('Y-m-d H:i:s');
         
-        $sql = "INSERT INTO Expenses (Amount, Category, Notes, CreatedAt) VALUES (?, ?, ?, ?)";
+        $sql = "INSERT INTO expenses (Amount, Category, Notes, CreatedAt) VALUES (?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("isss", $amount, $category, $notes, $date);
         $stmt->execute();
@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $receiver = $_POST['receiver'];
         $date = date('Y-m-d H:i:s');
         
-        $sql = "INSERT INTO OwnerTransfers (Amount, ReceiverName, TransferDate) VALUES (?, ?, ?)";
+        $sql = "INSERT INTO ownertransfers (Amount, ReceiverName, TransferDate) VALUES (?, ?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("iss", $amount, $receiver, $date);
         $stmt->execute();
@@ -32,19 +32,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 // 2. Handle Deletion
 if (isset($_GET['delete_expense'])) {
     $id = $_GET['delete_expense'];
-    $conn->query("DELETE FROM Expenses WHERE ExpenseID = $id");
+    $conn->query("DELETE FROM expenses WHERE ExpenseID = $id");
     header("Location: finance_manager.php");
 }
 
 if (isset($_GET['delete_transfer'])) {
     $id = $_GET['delete_transfer'];
-    $conn->query("DELETE FROM OwnerTransfers WHERE TransferID = $id");
+    $conn->query("DELETE FROM ownertransfers WHERE TransferID = $id");
     header("Location: finance_manager.php");
 }
 
 // 3. Fetch Data
-$expenses = $conn->query("SELECT * FROM Expenses ORDER BY CreatedAt DESC LIMIT 10");
-$transfers = $conn->query("SELECT * FROM OwnerTransfers ORDER BY TransferDate DESC LIMIT 10");
+$expenses = $conn->query("SELECT * FROM expenses ORDER BY CreatedAt DESC LIMIT 10");
+$transfers = $conn->query("SELECT * FROM ownertransfers ORDER BY TransferDate DESC LIMIT 10");
 ?>
 
 <!DOCTYPE html>
