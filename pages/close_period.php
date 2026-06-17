@@ -15,7 +15,7 @@ $id = $_GET['id'];
 
 $totalMeters = $conn->query("
 SELECT COUNT(*) as c
-FROM Meter
+FROM meter
 WHERE Status='Active'
 ")->fetch_assoc()['c'];
 
@@ -25,7 +25,7 @@ WHERE Status='Active'
 
 $totalReadings = $conn->query("
 SELECT COUNT(*) as c
-FROM Reading
+FROM reading
 WHERE PeriodID=$id
 ")->fetch_assoc()['c'];
 
