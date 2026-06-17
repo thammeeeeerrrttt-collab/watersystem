@@ -24,7 +24,7 @@ try{
     $conn->begin_transaction();
 
     // Find bills for this period
-    $stmt = $conn->prepare("SELECT BillID FROM Bill WHERE PeriodID = ?");
+    $stmt = $conn->prepare("SELECT BillID FROM bill WHERE PeriodID = ?");
     $stmt->bind_param('i', $id);
     $stmt->execute();
     $res = $stmt->get_result();
@@ -39,14 +39,14 @@ try{
         $in = implode(',', array_fill(0, count($billIds), '?'));
         $types = str_repeat('i', count($billIds));
 
-        $sql = "DELETE FROM PreviousArrearsRecords WHERE BillID IN ($in)";
+        $sql = "DELETE FROM previousarrearsrecords WHERE BillID IN ($in)";
         $delStmt = $conn->prepare($sql);
         $delStmt->bind_param($types, ...$billIds);
         $delStmt->execute();
         $delStmt->close();
 
         // Delete bills
-        $sql2 = "DELETE FROM Bill WHERE BillID IN ($in)";
+        $sql2 = "DELETE FROM bill WHERE BillID IN ($in)";
         $delBills = $conn->prepare($sql2);
         $delBills->bind_param($types, ...$billIds);
         $delBills->execute();
@@ -54,7 +54,7 @@ try{
     }
 
     // Delete readings for period
-    $delRead = $conn->prepare("DELETE FROM Reading WHERE PeriodID = ?");
+    $delRead = $conn->prepare("DELETE FROM reading WHERE PeriodID = ?");
     $delRead->bind_param('i', $id);
     $delRead->execute();
     $delRead->close();
