@@ -11,10 +11,10 @@ $message = "";
 
 // حذفنا كود إنشاء عمود Region لأننا سنعتمد على Location بشكل كامل
 
-$customers = $conn->query("SELECT CustomerID, Name FROM Customer");
+$customers = $conn->query("SELECT customerID, Name FROM customer");
 
 // جلب المواقع المسجلة مسبقاً لاقتراحها للمستخدم في الحقل (لتسهيل الإدخال)
-$existing_locations = $conn->query("SELECT DISTINCT Location FROM Meter WHERE Location IS NOT NULL AND Location != ''");
+$existing_locations = $conn->query("SELECT DISTINCT Location FROM meter WHERE Location IS NOT NULL AND Location != ''");
 
 if(isset($_POST['submit'])){
 
@@ -27,7 +27,7 @@ if(isset($_POST['submit'])){
 
         // حفظ البيانات في حقل Location فقط
         $stmt = $conn->prepare("
-            INSERT INTO Meter (CustomerID, MeterNumber, Location, Status)
+            INSERT INTO meter (CustomerID, MeterNumber, Location, Status)
             VALUES (?, ?, ?, ?)
         ");
 

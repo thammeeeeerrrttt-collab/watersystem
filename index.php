@@ -2,7 +2,7 @@
 session_start();
 include "db.php"; 
 
-// التحقق من تسجيل الدخول
+// التحقق من تسجيل الدخول بحروف صغيرة
 if(!isset($_SESSION['EmployeeID'])) {
     header("Location: login.php");
     exit();
@@ -16,6 +16,7 @@ $role = $_SESSION['Role'];
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة التحكم - نظام المياه الذكي</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
@@ -58,6 +59,8 @@ $role = $_SESSION['Role'];
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            transition: right 0.3s ease; /* لحركة الانزلاق في الجوال */
+            z-index: 1000;
         }
 
         .sidebar h2 {
@@ -113,6 +116,7 @@ $role = $_SESSION['Role'];
             flex: 1;
             padding: 40px;
             overflow-y: auto;
+            position: relative;
         }
 
         .top h1 { font-size: 2.2rem; margin: 0; font-weight: 800; }
@@ -120,7 +124,8 @@ $role = $_SESSION['Role'];
 
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            /* تصغير حجم البطاقة قليلاً لتتناسب مع شاشات الجوال الصغيرة */
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 25px;
             margin-top: 35px;
         }
@@ -147,13 +152,12 @@ $role = $_SESSION['Role'];
         .card h3 { margin: 10px 0; font-size: 1.25rem; font-weight: 700; }
         .card p { color: #64748b; font-size: 0.9rem; line-height: 1.4; }
 
-        /* الألوان المميزة للبطاقات */
         .card.analysis { border-color: var(--primary); }
         .card.market { border-color: var(--danger); }
         .card.settle { border-color: var(--success); }
         .card.finance { border-color: var(--warning); }
 
-        .admin-tag {
+        .Admin-tag {
             position: absolute;
             top: 15px;
             left: 15px;
@@ -164,12 +168,68 @@ $role = $_SESSION['Role'];
             font-weight: bold;
             color: #64748b;
         }
+
+        /* 📱 إعدادات الجوال (شاشات أصغر من 768px) */
+        .mobile-header { display: none; }
+        .close-btn { display: none; }
+
+        @media (max-width: 768px) {
+            body { 
+                flex-direction: column; 
+            }
+            .sidebar {
+                position: fixed;
+                top: 0;
+                right: -320px; /* إخفاء القائمة خارج الشاشة */
+                height: 100vh;
+                box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+            }
+            .sidebar.active {
+                right: 0; /* إظهار القائمة */
+            }
+            .close-btn {
+                display: block;
+                position: absolute;
+                left: 15px;
+                top: 20px;
+                background: none;
+                border: none;
+                color: #f87171;
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+            .content {
+                padding: 20px;
+            }
+            .top h1 { font-size: 1.8rem; }
+            .mobile-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                border-bottom: 1px solid rgba(255,255,255,0.2);
+                padding-bottom: 15px;
+            }
+            .menu-btn {
+                background: rgba(255, 255, 255, 0.1);
+                border: none;
+                color: white;
+                font-size: 1.5rem;
+                padding: 8px 15px;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: 0.3s;
+            }
+            .menu-btn:active { background: rgba(255, 255, 255, 0.3); }
+        }
     </style>
 </head>
 
 <body>
 
-<div class="sidebar">
+<div class="sidebar" id="sidebar">
+    <button class="close-btn" onclick="toggleMenu()"><i class="fa fa-times"></i></button>
+
     <h2>💧 نظام المياه الذكي</h2>
 
     <div class="user-info">
@@ -189,22 +249,25 @@ $role = $_SESSION['Role'];
     <div class="menu-label">العمليات والضخ</div>
     <a href="pages/main_meter_readings.php"><i class="fa fa-faucet"></i> إدخال قراءات الضخ</a>
     <a href="pages/periods.php"><i class="fa fa-user-edit"></i> قراءات المشتركين</a>
+    
     <?php if($role == "Admin") : ?>
         <div class="menu-label">التحليل والرقابة</div>
         <a href="pages/daily_analysis.php"><i class="fa fa-chart-area"></i> فواقد السلسلة</a>
         <a href="pages/period_analyzer.php"><i class="fa fa-magnifying-glass-chart"></i> الموجود في السوق</a>
         <a href="pages/period_settlement.php"><i class="fa fa-file-shield"></i> اعتماد الدورات</a>
     <?php endif; ?>
+    
     <div class="menu-label">المالية والصيانة</div>
     <a href="pages/bill/bills.php"><i class="fa fa-file-invoice-dollar"></i> الفواتير والسداد</a>
     <?php if($role == "Admin") : ?>
         <a href="pages/finance_manager.php"><i class="fa fa-hand-holding-dollar"></i> الإدارة المالية</a>
     <?php endif; ?>
-    <a href="pages/maintenance.php"><i class="fa fa-screwdriver-wrench"></i> الصيانة</a>
+    <a href="pages/maintenance.php"><i class="fa fa-screwdriver-wrench"></i> المخزون والصيانة</a>
 
     <?php if($role == "Admin") : ?>
         <div class="menu-label">الإدارة العليا</div>
         <a href="pages/employees.php"><i class="fa fa-user-tie"></i> الموظفين</a>
+        <a href="pages/message.php"><i class="fa fa-envelope"></i> الرسائل</a>
         <a href="pages/reports.php"><i class="fa fa-chart-pie"></i> التقارير والتحليلات</a>
         <a href="pages/settings.php"><i class="fa fa-gears"></i> الإعدادات</a>
     <?php endif; ?>
@@ -216,10 +279,17 @@ $role = $_SESSION['Role'];
 </div>
 
 <div class="content">
+    
+    <div class="mobile-header">
+        <h2 style="margin: 0; font-size: 1.5rem;">💧 نظام المياه</h2>
+        <button class="menu-btn" onclick="toggleMenu()"><i class="fa fa-bars"></i></button>
+    </div>
+
     <div class="top">
         <h1>Dashboard</h1>
         <p>مرحباً بك مجدداً.. نظام الرقابة يعمل بكفاءة 💧</p>
     </div>
+    
     <div class="cards"> 
        <?php if($role == "Admin") : ?>
             <a href="pages/daily_analysis.php" class="card analysis">
@@ -233,19 +303,20 @@ $role = $_SESSION['Role'];
             <h3>الموجود في السوق</h3>
             <p>مقارنة استهلاك المنطقة مع فواتير الناس (كشف السرقة).</p>
         </a>
+        
         <a href="pages/message.php" class="card market">
-            <i class="fa fa-messages"></i>
+            <i class="fa fa-envelope-open-text"></i>
             <h3>الرسائل</h3>
-            <p>ارسال رسائل للمشتركين.</p>
+            <p>ارسال رسائل للمشتركين للتنبيهات والمطالبات.</p>
         </a>
 
-        <!-- بطاقة الإدارة المالية الجديدة -->
         <a href="pages/finance_manager.php" class="card finance">
             <i class="fa fa-calculator"></i>
             <h3>الإدارة المالية</h3>
             <p>تسجيل المصروفات النثرية وتحويلات المبالغ للمالك.</p>
         </a>
     <?php endif; ?>
+    
         <a href="pages/bill/bills.php" class="card">
             <i class="fa fa-money-bill-transfer"></i>
             <h3>التحصيل المالي</h3>
@@ -254,14 +325,14 @@ $role = $_SESSION['Role'];
 
         <?php if($role == "Admin") : ?>
             <a href="pages/period_settlement.php" class="card settle">
-                <span class="admin-tag">ADMIN</span>
+                <span class="Admin-tag">ADMIN</span>
                 <i class="fa fa-box-archive"></i>
                 <h3>اعتماد السجلات</h3>
                 <p>ترحيل بيانات الفواقد إلى السجل التاريخي الدائم.</p>
             </a>
 
             <a href="pages/reports.php" class="card">
-                <span class="admin-tag">ADMIN</span>
+                <span class="Admin-tag">ADMIN</span>
                 <i class="fa fa-magnifying-glass-chart"></i>
                 <h3>تقارير الأداء</h3>
                 <p>عرض إحصائيات الأرباح والخسائر والنمو السنوي.</p>
@@ -269,6 +340,12 @@ $role = $_SESSION['Role'];
         <?php endif; ?>
     </div>
 </div>
+
+<script>
+    function toggleMenu() {
+        document.getElementById("sidebar").classList.toggle("active");
+    }
+</script>
 
 </body>
 </html>

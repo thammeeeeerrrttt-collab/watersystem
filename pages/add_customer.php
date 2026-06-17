@@ -24,7 +24,7 @@ if(isset($_POST['submit'])) {
     if($name != "" && $phone != "") {
 
         $stmt = $conn->prepare("
-            INSERT INTO Customer 
+            INSERT INTO customer 
             (Name, Phone, Email, Address, CycleID, UnitPrice)
             VALUES (?, ?, ?, ?, ?, ?)
         ");

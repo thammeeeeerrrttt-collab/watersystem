@@ -3,6 +3,7 @@ session_start();
 include "../db.php"; 
 
 // التحقق من صلاحية الوصول (Admin فقط)
+// الحقول والجلسات زي ما هي بالضبط
 if(!isset($_SESSION['EmployeeID']) || $_SESSION['Role'] != 'Admin') {
     die("<div style='text-align:center; padding:50px; font-family:sans-serif;'><h2>❌ عذراً، هذه الصفحة مخصصة لمدير النظام فقط.</h2><a href='../index.php'>العودة للرئيسية</a></div>");
 }
@@ -10,7 +11,8 @@ if(!isset($_SESSION['EmployeeID']) || $_SESSION['Role'] != 'Admin') {
 $message = "";
 
 // التأكد من وجود الجداول اللازمة عند التشغيل
-$conn->query("CREATE TABLE IF NOT EXISTS Role (RoleID INT AUTO_INCREMENT PRIMARY KEY, RoleName VARCHAR(50) UNIQUE NOT NULL)");
+// (اسم الجدول صغير role، وأسماء الحقول كما كانت RoleID, RoleName)
+$conn->query("CREATE TABLE IF NOT EXISTS role (RoleID INT AUTO_INCREMENT PRIMARY KEY, RoleName VARCHAR(50) UNIQUE NOT NULL)");
 $conn->query("
 CREATE TABLE IF NOT EXISTS role_permissions (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -23,9 +25,10 @@ CREATE TABLE IF NOT EXISTS role_permissions (
 if(isset($_POST['add_role'])){
     $new_role_name = trim($conn->real_escape_string($_POST['new_role_name']));
     if(!empty($new_role_name)){
-        $check = $conn->query("SELECT RoleID FROM Role WHERE RoleName = '$new_role_name'");
+        // الاستعلام باسم الجدول الصغير والحقول الكبيرة
+        $check = $conn->query("SELECT RoleID FROM role WHERE RoleName = '$new_role_name'");
         if($check->num_rows == 0){
-            $conn->query("INSERT INTO Role (RoleName) VALUES ('$new_role_name')");
+            $conn->query("INSERT INTO role (RoleName) VALUES ('$new_role_name')");
             $message = "<div class='msg success'>✅ تم إضافة الدور الجديد: $new_role_name</div>";
         } else {
             $message = "<div class='msg error'>❌ هذا الدور موجود مسبقاً!</div>";
@@ -53,7 +56,7 @@ if(isset($_POST['save_permissions'])){
 }
 
 // جلب الأدوار
-$roles_res = $conn->query("SELECT RoleName FROM Role ORDER BY RoleID ASC");
+$roles_res = $conn->query("SELECT RoleName FROM role ORDER BY RoleID ASC");
 $roles_list = [];
 while($r = $roles_res->fetch_assoc()){
     $roles_list[] = $r['RoleName'];
@@ -61,17 +64,23 @@ while($r = $roles_res->fetch_assoc()){
 
 // القائمة المحدثة للصفحات
 $pages = [
-    'dashboard'   => 'الرئيسية (Dashboard)',
-    'employees'   => 'إدارة الموظفين',
-    'customers'   => 'المشتركين',
-    'meters'      => 'العدادات',
-    'periods'     => 'الدورات المالية',
-    'bills'       => 'الفواتير والتحصيل',
-    'analytics'   => 'التقارير واعتماد التحاليل',
-    'maintenance' => 'الصيانة',
-    'messages'    => 'الرسائل النصية',
-    'logs'        => 'سجل النظام (Logs)',
-    'settings'    => 'إعدادات النظام'
+    'dashboard'             => 'الرئيسية (Dashboard)',
+    'customers'             => 'إدارة المشتركين',
+    'meters'                => 'عدادات المشتركين',
+    'main_meters'           => 'العدادات الرئيسية',
+    'main_meter_readings'   => 'إدخال قراءات الضخ',
+    'periods'               => 'قراءات المشتركين / الدورات',
+    'daily_analysis'        => 'التحليل اليومي (فواقد السلسلة)',
+    'period_analyzer'       => 'الموجود في السوق',
+    'period_settlement'     => 'اعتماد السجلات',
+    'bills'                 => 'الفواتير والتحصيل',
+    'finance_manager'       => 'الإدارة المالية',
+    'maintenance'           => 'المخزون والصيانة',
+    'employees'             => 'إدارة الموظفين',
+    'message'               => 'الرسائل',
+    'reports'               => 'التقارير والتحليلات',
+    'logs'                  => 'سجل النظام (Logs)',
+    'settings'              => 'إعدادات النظام'
 ];
 
 // جلب الصلاحيات الحالية من القاعدة
@@ -143,7 +152,6 @@ if($perm_res){
     
     <?= $message ?>
 
-    <!-- إضافة دور جديد -->
     <div class="card">
         <h3 class="card-title"><i class="fa fa-plus-circle"></i> إضافة مسمى وظيفي جديد</h3>
         <form method="POST" class="add-role-form">
@@ -157,7 +165,6 @@ if($perm_res){
         </form>
     </div>
 
-    <!-- مصفوفة الصلاحيات -->
     <form method="POST">
         <div class="card" style="padding: 0; overflow: hidden;">
             <div style="padding: 20px;">

@@ -9,11 +9,11 @@ if(isset($_POST['login'])) {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
 
-    // 1. البحث عن اسم المستخدم مع تصحيح أسماء الجداول لحروف صغيرة (employee و role)
+    // 1. نبحث عن اسم المستخدم فقط (بدون كلمة المرور)
     $stmt = $conn->prepare("
         SELECT e.EmployeeID, e.Name, e.Username, e.Password, e.DeviceToken, e.Location, r.RoleName
-        FROM employee e
-        JOIN role r ON e.RoleID = r.RoleID
+        FROM Employee e
+        JOIN Role r ON e.RoleID = r.RoleID
         WHERE e.Username = ?
         LIMIT 1
     ");
@@ -26,31 +26,38 @@ if(isset($_POST['login'])) {
 
         $row = $result->fetch_assoc();
         
-        $db_password = $row['Password']; 
+        $db_password = $row['Password']; // كلمة المرور المحفوظة في القاعدة (قد تكون مشفرة أو نص عادي)
         
-        // 2. التحقق من كلمة المرور
+        // 2. التحقق الذكي من كلمة المرور
+        // password_verify: تتحقق من الكلمة المشفرة (للموظفين الجدد)
+        // $password === $db_password: تتحقق من النص العادي (للموظفين القدامى)
         if (password_verify($password, $db_password) || $password === $db_password) {
+            
+            // --- كلمة المرور صحيحة، نكمل الآن إجراءات فحص الجهاز (Device Token) ---
             
             $employee_id = $row['EmployeeID'];
             $db_device_token = $row['DeviceToken'];
             
-            // جلب الرمز المحفوظ في متصفح المستخدم
+            // جلب الرمز المحفوظ في متصفح المستخدم (إن وجد)
             $browser_cookie_token = $_COOKIE['emp_device_id'] ?? '';
 
-            // الحالة الأولى: الموظف يدخل لأول مرة
+            // الحالة الأولى: الموظف يدخل لأول مرة (لا يوجد رمز في قاعدة البيانات)
             if (empty($db_device_token)) {
                 
+                // 1. توليد رمز سري فريد
                 $new_token = bin2hex(random_bytes(32)); 
                 
+                // 2. حفظ الرمز في متصفح الموظف كـ Cookie يبقى لمدة سنة
                 setcookie('emp_device_id', $new_token, time() + (86400 * 365), "/"); 
                 
-                // تصحيح اسم الجدول هنا أيضاً إلى حروف صغيرة (employee)
-                $conn->query("UPDATE employee SET DeviceToken = '$new_token' WHERE EmployeeID = $employee_id");
+                // 3. حفظ الرمز في قاعدة البيانات
+                $conn->query("UPDATE Employee SET DeviceToken = '$new_token' WHERE EmployeeID = $employee_id");
                 
+                // إكمال تسجيل الدخول وتخزين الجلسة
                 $_SESSION['EmployeeID'] = $row['EmployeeID'];
                 $_SESSION['Name'] = $row['Name'];
                 $_SESSION['Role'] = $row['RoleName'];
-                $_SESSION['Location'] = $row['Location']; 
+                $_SESSION['Location'] = $row['Location']; // إضافة منطقة الموظف للجلسة
 
                 header("Location: index.php");
                 exit();
@@ -58,15 +65,18 @@ if(isset($_POST['login'])) {
             } 
             // الحالة الثانية: الموظف لديه جهاز مربوط مسبقاً
             else {
+                
                 if ($browser_cookie_token === $db_device_token) {
+                    // الرموز متطابقة -> السماح بالدخول
                     $_SESSION['EmployeeID'] = $row['EmployeeID'];
                     $_SESSION['Name'] = $row['Name'];
                     $_SESSION['Role'] = $row['RoleName'];
-                    $_SESSION['Location'] = $row['Location']; 
+                    $_SESSION['Location'] = $row['Location']; // إضافة منطقة الموظف للجلسة
 
                     header("Location: index.php");
                     exit();
                 } else {
+                    // الرموز غير متطابقة -> يحاول الدخول من جهاز آخر
                     $error = "❌ غير مصرح لك بالدخول من هذا الجهاز. يرجى التواصل مع الإدارة لفك الارتباط.";
                 }
             }
@@ -76,13 +86,14 @@ if(isset($_POST['login'])) {
         }
 
     } else {
-        $error = "❌ اسم المستخدم غير صحيح أو فشل الاستعلام";
+        $error = "❌ اسم المستخدم غير صحيح";
     }
 
     $stmt->close();
     $conn->close();
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>

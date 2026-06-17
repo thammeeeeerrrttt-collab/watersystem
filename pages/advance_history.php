@@ -9,7 +9,7 @@ if(!isset($_SESSION['EmployeeID']) || $_SESSION['Role'] != 'Admin') {
 $emp_id = intval($_GET['emp_id'] ?? 0);
 
 // جلب بيانات الموظف
-$employee = $conn->query("SELECT Name, Salary FROM Employee WHERE EmployeeID = $emp_id")->fetch_assoc();
+$employee = $conn->query("SELECT Name, Salary FROM employee WHERE EmployeeID = $emp_id")->fetch_assoc();
 
 if(!$employee) {
     die("❌ الموظف غير موجود.");
