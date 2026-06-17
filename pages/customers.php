@@ -24,7 +24,7 @@ if($search != "") {
             Customer.Address,
             Customer.DateCreated,
             billingcycle.CycleName
-        FROM Customer
+        FROM customer
         LEFT JOIN billingcycle
         ON Customer.CycleID = billingcycle.CycleID
         WHERE Customer.Name LIKE '%$search%'
@@ -42,7 +42,7 @@ if($search != "") {
             Customer.Address,
             Customer.DateCreated,
             billingcycle.CycleName
-        FROM Customer
+        FROM customer
         LEFT JOIN billingcycle
         ON Customer.CycleID = billingcycle.CycleID
     ";
