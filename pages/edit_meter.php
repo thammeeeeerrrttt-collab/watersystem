@@ -17,7 +17,7 @@ $id = $_GET['id'];
 
 /* جلب بيانات العداد */
 $stmt = $conn->prepare("
-SELECT * FROM Meter WHERE MeterID = ?
+SELECT * FROM meter WHERE MeterID = ?
 ");
 $stmt->bind_param("i", $id);
 $stmt->execute();
@@ -29,7 +29,7 @@ if(!$meter){
 }
 
 /* جلب العملاء */
-$customers = $conn->query("SELECT * FROM Customer");
+$customers = $conn->query("SELECT * FROM customer");
 
 $message = "";
 
@@ -42,7 +42,7 @@ if(isset($_POST['update'])){
     $status = $_POST['status'];
 
     $update = $conn->prepare("
-        UPDATE Meter 
+        UPDATE meter 
         SET CustomerID=?, MeterNumber=?, Location=?, Status=?
         WHERE MeterID=?
     ");
