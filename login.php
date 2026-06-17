@@ -12,8 +12,8 @@ if(isset($_POST['login'])) {
     // 1. نبحث عن اسم المستخدم فقط (بدون كلمة المرور)
     $stmt = $conn->prepare("
         SELECT e.EmployeeID, e.Name, e.Username, e.Password, e.DeviceToken, e.Location, r.RoleName
-        FROM Employee e
-        JOIN Role r ON e.RoleID = r.RoleID
+        FROM employee e
+        JOIN role r ON e.RoleID = r.RoleID
         WHERE e.Username = ?
         LIMIT 1
     ");
