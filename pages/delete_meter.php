@@ -16,7 +16,7 @@ $id = $_GET['id'];
 
 /* Soft Delete بدل الحذف الحقيقي */
 $stmt = $conn->prepare("
-UPDATE Meter 
+UPDATE meter 
 SET IsDeleted = 1, Status = 'inactive'
 WHERE MeterID = ?
 ");
