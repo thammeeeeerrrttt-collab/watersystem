@@ -9,15 +9,15 @@ if(!isset($_SESSION['EmployeeID'])) {
 
 $result = $conn->query("
 SELECT 
-    Meter.MeterID,
-    Meter.MeterNumber,
-    Meter.Location,
-    Meter.Status,
-    Customer.Name
-FROM Meter
-LEFT JOIN Customer
-ON Meter.CustomerID = Customer.CustomerID
-WHERE Meter.IsDeleted = 0");
+    meter.MeterID,
+    meter.MeterNumber,
+    meter.Location,
+    meter.Status,
+    customer.Name
+FROM meter
+LEFT JOIN customer
+ON meter.CustomerID = customer.CustomerID
+WHERE meter.IsDeleted = 0");
 
 if(!$result){
     die("SQL Error: " . $conn->error);
