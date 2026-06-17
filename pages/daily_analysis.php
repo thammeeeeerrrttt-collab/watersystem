@@ -7,7 +7,7 @@ if (isset($_POST['action'])) {
     if ($_POST['action'] == 'delete') {
         $meter_id = $_POST['meter_id'];
         $date = $_POST['reading_date'];
-        $sql = "DELETE FROM MainMeterReading WHERE MeterID = '$meter_id' AND DATE(ReadingDate) = '$date'";
+        $sql = "DELETE FROM mainmeterreading WHERE MeterID = '$meter_id' AND DATE(ReadingDate) = '$date'";
         $conn->query($sql);
         header("Location: daily_analysis.php?date=$date&msg=deleted");
         exit();
@@ -20,7 +20,7 @@ if (isset($_POST['action'])) {
         $prev = $_POST['new_previous'];
         $cons = $curr - $prev;
         
-        $sql = "UPDATE MainMeterReading SET 
+        $sql = "UPDATE mainmeterreading SET 
                 CurrentReading = '$curr', 
                 PreviousReading = '$prev', 
                 Consumption = '$cons' 
@@ -45,10 +45,10 @@ $sql = "SELECT
             r.CurrentReading, 
             r.Consumption as MyConsumption,
             r.ReadingDate,
-            (SELECT Consumption FROM MainMeterReading WHERE MeterID = m.ParentMeterID AND DATE(ReadingDate) = '$target_date' LIMIT 1) as ParentConsumption
-        FROM Meter m
-        JOIN MainMeterReading r ON m.MeterID = r.MeterID
-        LEFT JOIN Meter p ON m.ParentMeterID = p.MeterID
+            (SELECT Consumption FROM mainmeterreading WHERE MeterID = m.ParentMeterID AND DATE(ReadingDate) = '$target_date' LIMIT 1) as ParentConsumption
+        FROM meter m
+        JOIN mainmeterreading r ON m.MeterID = r.MeterID
+        LEFT JOIN meter p ON m.ParentMeterID = p.MeterID
         WHERE m.MeterType = 'Main' 
         AND DATE(r.ReadingDate) = '$target_date'
         ORDER BY m.ParentMeterID ASC";
