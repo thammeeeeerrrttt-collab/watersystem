@@ -10,41 +10,41 @@ if(!isset($_SESSION['EmployeeID'])) {
 $search = "";
 
 if(isset($_GET['search'])) {
-    $search = $_GET['search'];
+    $search = $conn->real_escape_string($_GET['search']); // تم إضافة حماية ضد الـ SQL Injection
 }
 
 if($search != "") {
 
     $sql = "
         SELECT 
-            Customer.CustomerID,
-            Customer.Name,
-            Customer.Phone,
-            Customer.Email,
-            Customer.Address,
-            Customer.DateCreated,
+            customer.CustomerID,
+            customer.Name,
+            customer.Phone,
+            customer.Email,
+            customer.Address,
+            customer.DateCreated,
             billingcycle.CycleName
         FROM customer
         LEFT JOIN billingcycle
-        ON Customer.CycleID = billingcycle.CycleID
-        WHERE Customer.Name LIKE '%$search%'
-        OR Customer.Phone LIKE '%$search%'
+        ON customer.CycleID = billingcycle.CycleID
+        WHERE customer.Name LIKE '%$search%'
+        OR customer.Phone LIKE '%$search%'
     ";
 
 } else {
 
     $sql = "
         SELECT 
-            Customer.CustomerID,
-            Customer.Name,
-            Customer.Phone,
-            Customer.Email,
-            Customer.Address,
-            Customer.DateCreated,
+            customer.CustomerID,
+            customer.Name,
+            customer.Phone,
+            customer.Email,
+            customer.Address,
+            customer.DateCreated,
             billingcycle.CycleName
         FROM customer
         LEFT JOIN billingcycle
-        ON Customer.CycleID = billingcycle.CycleID
+        ON customer.CycleID = billingcycle.CycleID
     ";
 }
 
