@@ -9,15 +9,15 @@ if(!isset($_SESSION['EmployeeID']) || $_SESSION['Role'] != 'Admin') {
 $message = "";
 
 // 1. إضافة حقل الراتب إلى جدول الموظفين إذا لم يكن موجوداً
-$check_salary_col = $conn->query("SHOW COLUMNS FROM Employee LIKE 'Salary'");
+$check_salary_col = $conn->query("SHOW COLUMNS FROM employee LIKE 'Salary'");
 if($check_salary_col->num_rows == 0) {
-    $conn->query("ALTER TABLE Employee ADD Salary DECIMAL(10,2) DEFAULT 0 AFTER RoleID");
+    $conn->query("ALTER TABLE employee ADD Salary DECIMAL(10,2) DEFAULT 0 AFTER RoleID");
 }
 
 // إضافة حقل المنطقة/الموقع إلى جدول الموظفين إذا لم يكن موجوداً
-$check_location_col = $conn->query("SHOW COLUMNS FROM Employee LIKE 'Location'");
+$check_location_col = $conn->query("SHOW COLUMNS FROM employee LIKE 'Location'");
 if($check_location_col->num_rows == 0) {
-    $conn->query("ALTER TABLE Employee ADD Location VARCHAR(255) NULL AFTER Salary");
+    $conn->query("ALTER TABLE employee ADD Location VARCHAR(255) NULL AFTER Salary");
 }
 
 // 2. إنشاء جدول السحبيات / السلف
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS employee_advances (
     Amount DECIMAL(10,2) NOT NULL,
     AdvanceDate DATE NOT NULL,
     Notes VARCHAR(255),
-    FOREIGN KEY (EmployeeID) REFERENCES Employee(EmployeeID) ON DELETE CASCADE
+    FOREIGN KEY (EmployeeID) REFERENCES employee(EmployeeID) ON DELETE CASCADE
 )";
 $conn->query($create_advances_table);
 
@@ -50,13 +50,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_employee'])) {
     $role_name_safe  = $conn->real_escape_string($role_name_input);
 
     // البحث عن الصلاحية في جدول Role، وإذا لم تكن موجودة نقوم بإضافتها تلقائياً
-    $check_role = $conn->query("SELECT RoleID FROM Role WHERE RoleName = '$role_name_safe'");
+    $check_role = $conn->query("SELECT RoleID FROM role WHERE RoleName = '$role_name_safe'");
     if ($check_role && $check_role->num_rows > 0) {
         $role_row = $check_role->fetch_assoc();
         $role_id = $role_row['RoleID'];
     } else {
         // إنشاء الصلاحية الجديدة في قاعدة البيانات
-        $conn->query("INSERT INTO Role (RoleName) VALUES ('$role_name_safe')");
+        $conn->query("INSERT INTO role (RoleName) VALUES ('$role_name_safe')");
         $role_id = $conn->insert_id;
     }
 
@@ -67,14 +67,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_employee'])) {
     $phone    = $conn->real_escape_string($_POST['phone']);
     $email    = $conn->real_escape_string($_POST['email']);
     
-    $check_user = $conn->query("SELECT EmployeeID FROM Employee WHERE Username = '$username'");
+    $check_user = $conn->query("SELECT EmployeeID FROM employee WHERE Username = '$username'");
     if ($check_user->num_rows > 0) {
         $message = "<div class='msg error'>❌ اسم المستخدم موجود مسبقاً، يرجى اختيار اسم آخر.</div>";
     } else {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         
         // أضفنا حقل Salary و Location للاستعلام
-        $insert_query = "INSERT INTO Employee (Name, Username, Password, RoleID, Salary, Location, Phone, Email) 
+        $insert_query = "INSERT INTO employee (Name, Username, Password, RoleID, Salary, Location, Phone, Email) 
                          VALUES ('$name', '$username', '$hashed_password', $role_id, $salary, '$location', '$phone', '$email')";
         
         if ($conn->query($insert_query)) {
@@ -107,14 +107,14 @@ if (isset($_GET['delete_id'])) {
     if ($del_id == $_SESSION['EmployeeID']) {
         $message = "<div class='msg error'>❌ لا يمكنك حذف حسابك الشخصي!</div>";
     } else {
-        $conn->query("DELETE FROM Employee WHERE EmployeeID = $del_id");
+        $conn->query("DELETE FROM employee WHERE EmployeeID = $del_id");
         $message = "<div class='msg success'>✅ تم حذف الموظف بنجاح.</div>";
     }
 }
 
 if (isset($_GET['reset_device_id'])) {
     $reset_id = intval($_GET['reset_device_id']);
-    $conn->query("UPDATE Employee SET DeviceToken = NULL WHERE EmployeeID = $reset_id");
+    $conn->query("UPDATE employee SET DeviceToken = NULL WHERE EmployeeID = $reset_id");
     $message = "<div class='msg success'>✅ تم فك ارتباط جهاز الموظف.</div>";
 }
 
@@ -126,22 +126,22 @@ $employees_query = "
     SELECT e.*, 
            COALESCE(SUM(a.Amount), 0) AS TotalAdvances,
            r.RoleName
-    FROM Employee e
+    FROM employee e
     LEFT JOIN employee_advances a 
            ON e.EmployeeID = a.EmployeeID 
            AND MONTH(a.AdvanceDate) = $current_month 
            AND YEAR(a.AdvanceDate) = $current_year
-    LEFT JOIN Role r ON e.RoleID = r.RoleID
+    LEFT JOIN role r ON e.RoleID = r.RoleID
     GROUP BY e.EmployeeID
     ORDER BY e.EmployeeID DESC
 ";
 $employees = $conn->query($employees_query);
 
 // جلب الصلاحيات المسجلة مسبقاً لاقتراحها أثناء الكتابة
-$existing_roles = $conn->query("SELECT RoleName FROM Role");
+$existing_roles = $conn->query("SELECT RoleName FROM role");
 
 // جلب قائمة الموظفين لاستخدامها في قائمة السحبيات المنسدلة
-$emps_list = $conn->query("SELECT EmployeeID, Name FROM Employee ORDER BY Name ASC");
+$emps_list = $conn->query("SELECT EmployeeID, Name FROM employee ORDER BY Name ASC");
 ?>
 
 <!DOCTYPE html>
