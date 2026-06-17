@@ -39,14 +39,14 @@ try{
     /* ===== حذف الفواتير ===== */
 
     $conn->query("
-    DELETE FROM Bill
+    DELETE FROM bill
     WHERE PeriodID = $periodID
     ");
 
     /* ===== حذف القراءات ===== */
 
     $conn->query("
-    DELETE FROM Reading
+    DELETE FROM reading
     WHERE PeriodID = $periodID
     ");
 
