@@ -11,7 +11,7 @@ $message = "";
 
 // حذفنا كود إنشاء عمود Region لأننا سنعتمد على Location بشكل كامل
 
-$customers = $conn->query("SELECT customerID, Name FROM customer");
+$customers = $conn->query("SELECT CustomerID, Name FROM customer");
 
 // جلب المواقع المسجلة مسبقاً لاقتراحها للمستخدم في الحقل (لتسهيل الإدخال)
 $existing_locations = $conn->query("SELECT DISTINCT Location FROM meter WHERE Location IS NOT NULL AND Location != ''");
