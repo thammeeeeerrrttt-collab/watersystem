@@ -26,7 +26,7 @@ if (isset($_POST['save_reading'])) {
     if ($consumption < 0) {
         $message = "❌ خطأ: القراءة الحالية أقل من السابقة!";
     } else {
-        $sql = "INSERT INTO MainMeterReading (MeterID, PreviousReading, CurrentReading, CreatedBy, ReadingType, ReadingDate) 
+        $sql = "INSERT INTO mainmeterreading (MeterID, PreviousReading, CurrentReading, CreatedBy, ReadingType, ReadingDate) 
                 VALUES ('$meter_id', '$prev_reading', '$curr_reading', '$emp_id', '$reading_type', NOW())";
         if ($conn->query($sql)) $message = "✅ تم تسجيل القراءة بنجاح.";
     }
@@ -35,7 +35,7 @@ if (isset($_POST['save_reading'])) {
 // 2. حذف قراءة (للمدير فقط)
 if (isset($_GET['delete_id']) && $isAdmin) {
     $id = intval($_GET['delete_id']);
-    if ($conn->query("DELETE FROM MainMeterReading WHERE ReadingID = $id")) {
+    if ($conn->query("DELETE FROM mainmeterreading WHERE ReadingID = $id")) {
         $message = "🗑️ تم حذف العملية بنجاح.";
     }
 }
@@ -46,7 +46,7 @@ if (isset($_POST['update_reading']) && $isAdmin) {
     $curr = $_POST['edit_curr'];
     $prev = $_POST['edit_prev'];
     if ($curr >= $prev) {
-        $conn->query("UPDATE MainMeterReading SET CurrentReading = '$curr', PreviousReading = '$prev' WHERE ReadingID = $id");
+        $conn->query("UPDATE mainmeterreading SET CurrentReading = '$curr', PreviousReading = '$prev' WHERE ReadingID = $id");
         $message = "✏️ تم تحديث البيانات بنجاح.";
     }
 }
@@ -56,21 +56,21 @@ $selected_location = isset($_GET['location']) ? $conn->real_escape_string($_GET[
 $where_clause = $selected_location ? " AND m.Location = '$selected_location' " : "";
 
 $meters_result = $conn->query("SELECT m.*, 
-    (SELECT CurrentReading FROM MainMeterReading WHERE MeterID = m.MeterID ORDER BY ReadingID DESC LIMIT 1) as LastStoredReading 
-    FROM Meter m WHERE m.MeterType = 'Main' AND m.IsDeleted = 0 $where_clause");
+    (SELECT CurrentReading FROM mainmeterreading WHERE MeterID = m.MeterID ORDER BY ReadingID DESC LIMIT 1) as LastStoredReading 
+    FROM meter m WHERE m.MeterType = 'Main' AND m.IsDeleted = 0 $where_clause");
 
 $history_result = null;
 if ($isAdmin) {
     $history_sql = "SELECT r.*, m.MeterNumber, m.Location, e.Name as EmployeeName 
-                    FROM MainMeterReading r 
-                    JOIN Meter m ON r.MeterID = m.MeterID 
-                    JOIN Employee e ON r.CreatedBy = e.EmployeeID
+                    FROM mainmeterreading r 
+                    JOIN meter m ON r.MeterID = m.MeterID 
+                    JOIN employee e ON r.CreatedBy = e.EmployeeID
                     WHERE m.IsDeleted = 0 $where_clause
                     ORDER BY r.ReadingDate DESC LIMIT 50";
     $history_result = $conn->query($history_sql);
 }
 
-$locations_result = $conn->query("SELECT DISTINCT Location FROM Meter WHERE MeterType = 'Main'");
+$locations_result = $conn->query("SELECT DISTINCT Location FROM meter WHERE MeterType = 'Main'");
 ?>
 
 <!DOCTYPE html>
