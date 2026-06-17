@@ -23,14 +23,14 @@ SELECT
 
     (
         SELECT CurrentReading
-        FROM Reading r
+        FROM reading r
         WHERE r.MeterID = m.MeterID
         ORDER BY r.ReadingID DESC
         LIMIT 1
     ) AS LastReading
 
-FROM Meter m
-JOIN Customer c ON c.CustomerID = m.CustomerID
+FROM meter m
+JOIN customer c ON c.CustomerID = m.CustomerID
 ");
 
 // نهيئ المتغيرات لمجاميع الدورة الحالية (ستُملأ أثناء دورة العرض)
