@@ -13,7 +13,7 @@ $message = "";
 if (isset($_GET['delete_id'])) {
     $del_id = intval($_GET['delete_id']);
     // التأكد من أننا نحذف فقط عدادات رئيسية أو فرعية وليس مشتركين بالخطأ هنا
-    $sql = "UPDATE Meter SET IsDeleted = 1 WHERE MeterID = $del_id AND (MeterType = 'Main' OR MeterType = 'SubMain')";
+    $sql = "UPDATE meter SET IsDeleted = 1 WHERE MeterID = $del_id AND (MeterType = 'Main' OR MeterType = 'SubMain')";
     if ($conn->query($sql)) {
         header("Location: manage_meters.php?msg=deleted");
         exit();
@@ -27,7 +27,7 @@ if (isset($_POST['add_meter'])) {
     $m_type = $conn->real_escape_string($_POST['meter_type']); 
     $parent = ($_POST['parent_id'] == "") ? "NULL" : intval($_POST['parent_id']);
     
-    $sql = "INSERT INTO Meter (MeterNumber, Location, MeterType, ParentMeterID, Status) 
+    $sql = "INSERT INTO meter (MeterNumber, Location, MeterType, ParentMeterID, Status) 
             VALUES ('$m_num', '$loc', '$m_type', $parent, 'Active')";
     
     if ($conn->query($sql)) {
@@ -45,7 +45,7 @@ if (isset($_POST['update_meter'])) {
     $m_type = $conn->real_escape_string($_POST['meter_type']);
     $parent = ($_POST['parent_id'] == "") ? "NULL" : intval($_POST['parent_id']);
 
-    $sql = "UPDATE Meter SET MeterNumber='$m_num', Location='$loc', MeterType='$m_type', ParentMeterID=$parent WHERE MeterID=$edit_id";
+    $sql = "UPDATE meter SET MeterNumber='$m_num', Location='$loc', MeterType='$m_type', ParentMeterID=$parent WHERE MeterID=$edit_id";
     if ($conn->query($sql)) {
         $message = "✅ تم تحديث بيانات العداد بنجاح";
     } else {
@@ -55,15 +55,15 @@ if (isset($_POST['update_meter'])) {
 
 // تعديل الاستعلام: جلب العدادات (الرئيسية والمناطق فقط) واستبعاد عدادات المشتركين
 $sql = "SELECT m1.*, m2.MeterNumber as ParentName 
-        FROM Meter m1 
-        LEFT JOIN Meter m2 ON m1.ParentMeterID = m2.MeterID 
+        FROM meter m1 
+        LEFT JOIN meter m2 ON m1.ParentMeterID = m2.MeterID 
         WHERE m1.IsDeleted = 0 
         AND (m1.MeterType = 'Main' OR m1.MeterType = 'SubMain')
         ORDER BY m1.MeterType ASC, m1.MeterID DESC";
 $result = $conn->query($sql);
 
 // تعديل القائمة المنسدلة: إظهار المصادر المتاحة فقط للربط (استبعاد المشتركين)
-$parents_list = $conn->query("SELECT MeterID, MeterNumber, MeterType FROM Meter WHERE IsDeleted = 0 AND (MeterType = 'Main' OR MeterType = 'SubMain')");
+$parents_list = $conn->query("SELECT MeterID, MeterNumber, MeterType FROM meter WHERE IsDeleted = 0 AND (MeterType = 'Main' OR MeterType = 'SubMain')");
 $parents_data = [];
 while($p = $parents_list->fetch_assoc()) {
     $parents_data[] = $p;
