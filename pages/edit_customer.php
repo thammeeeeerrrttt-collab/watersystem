@@ -15,7 +15,7 @@ $id = $_GET['id'];
 
 $result = $conn->query("
 SELECT * 
-FROM Customer 
+FROM customer 
 WHERE CustomerID = $id
 ");
 
@@ -34,7 +34,7 @@ if(isset($_POST['update'])) {
     $unitprice  = $_POST['unitprice'];
 
     $stmt = $conn->prepare("
-        UPDATE Customer 
+        UPDATE customer 
         SET 
             Name=?,
             Phone=?,
