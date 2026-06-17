@@ -29,6 +29,7 @@ if(isset($_GET['delete_adv'])) {
 
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+    
 <head>
 <meta charset="UTF-8">
 <title>سجل سحبيات: <?= htmlspecialchars($employee['Name']) ?></title>
