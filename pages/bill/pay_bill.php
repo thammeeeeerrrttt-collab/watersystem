@@ -15,8 +15,8 @@ $id = intval($_GET['id']);
 
 $bill = $conn->query("
 SELECT b.*, c.Name
-FROM Bill b
-JOIN Customer c ON b.CustomerID = c.CustomerID
+FROM bill b
+JOIN customer c ON b.CustomerID = c.CustomerID
 WHERE b.BillID = $id
 ")->fetch_assoc();
 
@@ -29,14 +29,14 @@ if(!$bill){
 ===================================== */
 
 $columns = [
-    "PreviousArrears" => "ALTER TABLE Bill ADD PreviousArrears DECIMAL(12,2) DEFAULT 0",
-    "PaidAmount" => "ALTER TABLE Bill ADD PaidAmount DECIMAL(12,2) DEFAULT 0",
-    "RemainingAmount" => "ALTER TABLE Bill ADD RemainingAmount DECIMAL(12,2) DEFAULT 0",
-    "PaymentDate" => "ALTER TABLE Bill ADD PaymentDate DATETIME NULL" 
+    "PreviousArrears" => "ALTER TABLE bill ADD PreviousArrears DECIMAL(12,2) DEFAULT 0",
+    "PaidAmount" => "ALTER TABLE bill ADD PaidAmount DECIMAL(12,2) DEFAULT 0",
+    "RemainingAmount" => "ALTER TABLE bill ADD RemainingAmount DECIMAL(12,2) DEFAULT 0",
+    "PaymentDate" => "ALTER TABLE bill ADD PaymentDate DATETIME NULL" 
 ];
 
 foreach($columns as $col => $sql){
-    $check = $conn->query("SHOW COLUMNS FROM Bill LIKE '$col'");
+    $check = $conn->query("SHOW COLUMNS FROM bill LIKE '$col'");
     if($check->num_rows == 0){
         $conn->query($sql);
     }
@@ -98,7 +98,7 @@ if(isset($_POST['pay'])){
     }
     
     $stmt = $conn->prepare("
-    UPDATE Bill
+    UPDATE bill
     SET 
         PaidAmount = ?, 
         RemainingAmount = ?, 
@@ -123,7 +123,7 @@ if(isset($_POST['pay'])){
     ===================================== */
     $checkAr = $conn->query("
     SELECT ArrearID
-    FROM PreviousArrearsRecords
+    FROM previousarrearsrecords
     WHERE BillID = $id
     ");
 
@@ -132,7 +132,7 @@ if(isset($_POST['pay'])){
         $arID = intval($ar['ArrearID']);
 
         $conn->query("
-        UPDATE PreviousArrearsRecords
+        UPDATE previousarrearsrecords
         SET RemainingAmount = $remaining
         WHERE ArrearID = $arID
         ");
@@ -141,7 +141,7 @@ if(isset($_POST['pay'])){
         $periodID = intval($bill['PeriodID']);
 
         $conn->query("
-        INSERT INTO PreviousArrearsRecords
+        INSERT INTO previousarrearsrecords
         (
             BillID,
             CustomerID,
