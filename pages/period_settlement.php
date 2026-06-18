@@ -20,8 +20,8 @@ if (isset($_POST['bulk_confirm'])) {
             $loss = $pumped - $sold;
             $loss_pct = ($pumped > 0) ? ($loss / $pumped) * 100 : 0;
 
-            $sql = "INSERT INTO TechnicalLossLog (MainMeterID, PeriodID, TotalPumped, TotalInvoiced, LossAmount, LossPercentage) 
-                    VALUES ((SELECT MeterID FROM Meter WHERE Location = '$location' AND MeterType = 'Main' LIMIT 1), 
+            $sql = "INSERT INTO technicaltosslog (MainMeterID, PeriodID, TotalPumped, TotalInvoiced, LossAmount, LossPercentage) 
+                    VALUES ((SELECT MeterID FROM meter WHERE Location = '$location' AND MeterType = 'Main' LIMIT 1), 
                     '$period_id', '$pumped', '$sold', '$loss', '$loss_pct')";
 
             if ($conn->query($sql)) {
@@ -43,9 +43,9 @@ $sql_check = "SELECT
                 r.PeriodID,
                 SUM(r.Consumption) as Pumped,
                 (SELECT SUM(Consumption) FROM bill WHERE Location = m.Location AND PeriodID = r.PeriodID) as Sold
-              FROM Meter m
-              JOIN MainMeterReading r ON m.MeterID = r.MeterID
-              LEFT JOIN TechnicalLossLog log ON m.MeterID = log.MainMeterID AND r.PeriodID = log.PeriodID
+              FROM meter m
+              JOIN mainmeterreading r ON m.MeterID = r.MeterID
+              LEFT JOIN technicallosslog log ON m.MeterID = log.MainMeterID AND r.PeriodID = log.PeriodID
               WHERE m.MeterType = 'Main' AND log.LogID IS NULL
               GROUP BY m.Location, r.PeriodID";
 
