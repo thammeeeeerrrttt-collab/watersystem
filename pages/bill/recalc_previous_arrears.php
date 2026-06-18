@@ -13,7 +13,7 @@ elseif(isset($_GET['period_id'])) $periodID = intval($_GET['period_id']);
 
 // Build list of bills to update
 // Get bills (optionally filter by period)
-$sql = "SELECT BillID, CustomerID, PeriodID FROM Bill" . ($periodID !== '' ? " WHERE PeriodID = ?" : "");
+$sql = "SELECT BillID, CustomerID, PeriodID FROM bill" . ($periodID !== '' ? " WHERE PeriodID = ?" : "");
 $stmt = $conn->prepare($sql);
 if($periodID !== ''){
     $stmt->bind_param("i", $periodID);
@@ -24,10 +24,10 @@ $res = $stmt->get_result();
 
 // Rebuild PreviousArrearsRecords table from current Bill RemainingAmount data
 // (clear then repopulate)
-$tblCheck = $conn->query("SHOW TABLES LIKE 'PreviousArrearsRecords'");
+$tblCheck = $conn->query("SHOW TABLES LIKE 'previousarrearsrecords'");
 if(!$tblCheck || $tblCheck->num_rows == 0){
     $conn->query(
-        "CREATE TABLE PreviousArrearsRecords (
+        "CREATE TABLE previousarrearsrecords (
             ArrearID INT AUTO_INCREMENT PRIMARY KEY,
             BillID INT NOT NULL,
             CustomerID INT NOT NULL,
@@ -40,10 +40,10 @@ if(!$tblCheck || $tblCheck->num_rows == 0){
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
     );
 }
-$conn->query("TRUNCATE TABLE PreviousArrearsRecords");
-$allBills = $conn->query("SELECT BillID, CustomerID, PeriodID, RemainingAmount FROM Bill");
+$conn->query("TRUNCATE TABLE previousarrearsrecords");
+$allBills = $conn->query("SELECT BillID, CustomerID, PeriodID, RemainingAmount FROM bill");
 if($allBills){
-    $insAr = $conn->prepare("INSERT INTO PreviousArrearsRecords (BillID, CustomerID, PeriodID, RemainingAmount) VALUES (?, ?, ?, ?)");
+    $insAr = $conn->prepare("INSERT INTO previousarrearsrecords (BillID, CustomerID, PeriodID, RemainingAmount) VALUES (?, ?, ?, ?)");
     while($b = $allBills->fetch_assoc()){
         $bid2 = intval($b['BillID']);
         $cust2 = intval($b['CustomerID']);
@@ -56,8 +56,8 @@ if($allBills){
 }
 
 // Now compute aggregated previous arrears per bill using the records table
-$sumStmt = $conn->prepare("SELECT COALESCE(SUM(RemainingAmount),0) AS s FROM PreviousArrearsRecords WHERE CustomerID = ? AND PeriodID < ?");
-$updStmt = $conn->prepare("UPDATE Bill SET PreviousArrears = ? WHERE BillID = ?");
+$sumStmt = $conn->prepare("SELECT COALESCE(SUM(RemainingAmount),0) AS s FROM previousarrearsrecords WHERE CustomerID = ? AND PeriodID < ?");
+$updStmt = $conn->prepare("UPDATE bill SET PreviousArrears = ? WHERE BillID = ?");
 
 while($r = $res->fetch_assoc()){
     $bid = intval($r['BillID']);
