@@ -36,14 +36,14 @@ $paymentDate = isset($_GET['payment_date']) ? $conn->real_escape_string($_GET['p
 /* ===== جلب الدورات والمناطق للفلاتر ===== */
 $periods = $conn->query("SELECT * FROM billing_period ORDER BY PeriodID DESC");
 // جلب المواقع من جدول العدادات بدلاً من جدول العملاء
-$locations_result = $conn->query("SELECT DISTINCT Location FROM Meter WHERE Location IS NOT NULL AND Location != ''");
+$locations_result = $conn->query("SELECT DISTINCT Location FROM meter WHERE Location IS NOT NULL AND Location != ''");
 
 /* ===== جلب الفواتير مع اسم المشترك والموقع ===== */
 // نستخدم LEFT JOIN مع استعلام فرعي لجدول العدادات لضمان جلب موقع واحد لكل عميل وعدم تكرار الفواتير
 $sql = "SELECT b.*, c.Name, m.Location 
-        FROM Bill b 
-        JOIN Customer c ON b.CustomerID = c.CustomerID 
-        LEFT JOIN (SELECT CustomerID, MAX(Location) as Location FROM Meter GROUP BY CustomerID) m ON c.CustomerID = m.CustomerID
+        FROM bill b 
+        JOIN customer c ON b.CustomerID = c.CustomerID 
+        LEFT JOIN (SELECT CustomerID, MAX(Location) as Location FROM meter GROUP BY CustomerID) m ON c.CustomerID = m.CustomerID
         WHERE 1=1";
 
 /* ===== تطبيق الفلاتر على الاستعلام ===== */
@@ -66,9 +66,9 @@ $result = $conn->query($sql);
 
 /* ===== الإحصائيات (تتأثر بالفلاتر المحددة) ===== */
 $whereStats = "WHERE 1=1";
-$joinStats = " FROM Bill b 
-               JOIN Customer c ON b.CustomerID = c.CustomerID 
-               LEFT JOIN (SELECT CustomerID, MAX(Location) as Location FROM Meter GROUP BY CustomerID) m ON c.CustomerID = m.CustomerID ";
+$joinStats = " FROM bill b 
+               JOIN customer c ON b.CustomerID = c.CustomerID 
+               LEFT JOIN (SELECT CustomerID, MAX(Location) as Location FROM meter GROUP BY CustomerID) m ON c.CustomerID = m.CustomerID ";
 
 if($periodID != '') $whereStats .= " AND b.PeriodID=$periodID";
 if($status != '') $whereStats .= " AND b.Status='$status'";
