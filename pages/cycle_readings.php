@@ -161,7 +161,7 @@ input{
 
 <?php
     // جلب القراءة المحفوظة لهذه الدورة إن وجدت
-    $existing = $conn->query("SELECT PreviousReading, CurrentReading FROM Reading WHERE MeterID = {$m['MeterID']} AND PeriodID = $periodID LIMIT 1")->fetch_assoc();
+    $existing = $conn->query("SELECT PreviousReading, CurrentReading FROM reading WHERE MeterID = {$m['MeterID']} AND PeriodID = $periodID LIMIT 1")->fetch_assoc();
 
     if($existing){
         $prev = $existing['PreviousReading'];
