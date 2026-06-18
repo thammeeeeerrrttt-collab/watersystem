@@ -20,7 +20,8 @@ if (isset($_POST['bulk_confirm'])) {
             $loss = $pumped - $sold;
             $loss_pct = ($pumped > 0) ? ($loss / $pumped) * 100 : 0;
 
-            $sql = "INSERT INTO technicaltosslog (MainMeterID, PeriodID, TotalPumped, TotalInvoiced, LossAmount, LossPercentage) 
+            // تم تصحيح اسم الجدول من technicaltosslog إلى technicallosslog
+            $sql = "INSERT INTO technicallosslog (MainMeterID, PeriodID, TotalPumped, TotalInvoiced, LossAmount, LossPercentage) 
                     VALUES ((SELECT MeterID FROM meter WHERE Location = '$location' AND MeterType = 'Main' LIMIT 1), 
                     '$period_id', '$pumped', '$sold', '$loss', '$loss_pct')";
 
@@ -37,6 +38,7 @@ if (isset($_POST['bulk_confirm'])) {
 /**
  * 2. الاستعلام الرئيسي لجلب البيانات غير المرحلة بعد
  */
+// تم إضافة m.MeterNumber إلى سطر الـ GROUP BY لحل مشكلة السيرفر
 $sql_check = "SELECT 
                 m.Location, 
                 m.MeterNumber,
@@ -47,12 +49,12 @@ $sql_check = "SELECT
               JOIN mainmeterreading r ON m.MeterID = r.MeterID
               LEFT JOIN technicallosslog log ON m.MeterID = log.MainMeterID AND r.PeriodID = log.PeriodID
               WHERE m.MeterType = 'Main' AND log.LogID IS NULL
-              GROUP BY m.Location, r.PeriodID";
+              GROUP BY m.Location, m.MeterNumber, r.PeriodID";
 
 $result = $conn->query($sql_check);
 
 if (!$result) {
-    $db_error = $conn->error;
+    $error_msg = "❌ خطأ في قاعدة البيانات: " . $conn->error;
 }
 ?>
 
@@ -110,7 +112,6 @@ if (!$result) {
             </div>
             
             <div class="actions-group">
-                <!-- تم تعديل المسار هنا ليعود للمجلد الرئيسي -->
                 <a href="../index.php" class="btn-back">
                     <i class="fa fa-arrow-right"></i> إلغاء ورجوع
                 </a>
