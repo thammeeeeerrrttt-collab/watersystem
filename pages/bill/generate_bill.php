@@ -21,8 +21,8 @@ $readingID = $_GET['id'];
 ========================= */
 $stmt = $conn->prepare("
 SELECT r.*, c.CustomerID, c.Name
-FROM Reading r
-JOIN Customer c ON r.CustomerID = c.CustomerID
+FROM reading r
+JOIN customer c ON r.CustomerID = c.CustomerID
 WHERE r.ReadingID = ?
 ");
 
@@ -38,7 +38,7 @@ if(!$row){
 /* =========================
    3) منع التكرار
 ========================= */
-$check = $conn->prepare("SELECT BillID FROM Bill WHERE ReadingID = ?");
+$check = $conn->prepare("SELECT BillID FROM bill WHERE ReadingID = ?");
 $check->bind_param("i", $readingID);
 $check->execute();
 $exists = $check->get_result();
@@ -75,7 +75,7 @@ $amount = $consumption * $rate;
 /* =========================
    7) توليد رقم فاتورة
 ========================= */
-$last = $conn->query("SELECT BillID FROM Bill ORDER BY BillID DESC LIMIT 1");
+$last = $conn->query("SELECT BillID FROM bill ORDER BY BillID DESC LIMIT 1");
 $lastRow = $last->fetch_assoc();
 
 $nextID = $lastRow ? $lastRow['BillID'] + 1 : 1;
@@ -87,7 +87,7 @@ $billNumber = "BILL-" . str_pad($nextID, 4, "0", STR_PAD_LEFT);
 $periodID = isset($row['PeriodID']) ? intval($row['PeriodID']) : 0;
 
 $insert = $conn->prepare(
-"INSERT INTO Bill 
+"INSERT INTO bill 
 (BillNumber, CustomerID, ReadingID, Consumption, Rate, Amount, PaidAmount, RemainingAmount, Status, BillDate, PeriodID)
 VALUES (?, ?, ?, ?, ?, ?, 0, ?, 'Unpaid', NOW(), ?)"
 );
