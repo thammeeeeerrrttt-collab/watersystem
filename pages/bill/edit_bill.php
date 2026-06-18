@@ -72,7 +72,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     ===================================== */
 
     $stmt = $conn->prepare("
-    UPDATE Bill 
+    UPDATE bill 
     SET 
         Amount = ?,
         PaidAmount = ?,
@@ -105,7 +105,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 
     $bill = $conn->query("
     SELECT CustomerID, PeriodID
-    FROM Bill
+    FROM bill
     WHERE BillID = $id
     ")->fetch_assoc();
 
@@ -117,7 +117,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     ===================================== */
 
     $conn->query("
-    UPDATE Bill
+    UPDATE bill
     SET
         Rate = $rate,
         Amount = Consumption * $rate,
@@ -141,8 +141,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 
 $stmt = $conn->prepare("
 SELECT b.*, c.Name
-FROM Bill b
-JOIN Customer c ON b.CustomerID = c.CustomerID
+FROM bill b
+JOIN customer c ON b.CustomerID = c.CustomerID
 WHERE b.BillID = ?
 LIMIT 1
 ");
