@@ -9,16 +9,16 @@ if(!isset($_SESSION['EmployeeID'])){
 }
 
 // Ensure Bill.PreviousArrears exists
-$check = $conn->query("SHOW COLUMNS FROM Bill LIKE 'PreviousArrears'");
+$check = $conn->query("SHOW COLUMNS FROM bill LIKE 'PreviousArrears'");
 if($check && $check->num_rows == 0){
-    $conn->query("ALTER TABLE Bill ADD PreviousArrears DECIMAL(12,2) NOT NULL DEFAULT 0");
+    $conn->query("ALTER TABLE bill ADD PreviousArrears DECIMAL(12,2) NOT NULL DEFAULT 0");
 }
 
 // Create a dedicated table to store per-bill arrears records (previous periods)
-$tblCheck = $conn->query("SHOW TABLES LIKE 'PreviousArrearsRecords'");
+$tblCheck = $conn->query("SHOW TABLES LIKE 'previousarrearsrecords'");
 if(!$tblCheck || $tblCheck->num_rows == 0){
     $conn->query(
-        "CREATE TABLE PreviousArrearsRecords (
+        "CREATE TABLE previousarrearsrecords (
             ArrearID INT AUTO_INCREMENT PRIMARY KEY,
             BillID INT NOT NULL,
             CustomerID INT NOT NULL,
