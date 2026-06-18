@@ -5,8 +5,8 @@ $id = $_GET['id'];
 
 $bill = $conn->query("
 SELECT b.*, c.Name, c.Phone, c.Address
-FROM Bill b
-JOIN Customer c ON b.CustomerID = c.CustomerID
+FROM bill b
+JOIN customer c ON b.CustomerID = c.CustomerID
 WHERE b.BillID = $id
 ")->fetch_assoc();
 ?>
