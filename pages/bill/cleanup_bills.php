@@ -12,13 +12,13 @@ set_time_limit(0);
 $conn->begin_transaction();
 try{
     // Prepare statements
-    $getBills = $conn->query("SELECT BillID, CustomerID, ReadingID, Consumption, Rate, PaidAmount, PeriodID FROM Bill ORDER BY PeriodID, BillID");
+    $getBills = $conn->query("SELECT BillID, CustomerID, ReadingID, Consumption, Rate, PaidAmount, PeriodID FROM bill ORDER BY PeriodID, BillID");
 
-    $updBill = $conn->prepare("UPDATE Bill SET Amount = ?, PaidAmount = ?, RemainingAmount = ?, Status = ? WHERE BillID = ?");
+    $updBill = $conn->prepare("UPDATE bill SET Amount = ?, PaidAmount = ?, RemainingAmount = ?, Status = ? WHERE BillID = ?");
 
-    $checkAr = $conn->prepare("SELECT ArrearID FROM PreviousArrearsRecords WHERE BillID = ? LIMIT 1");
-    $insAr = $conn->prepare("INSERT INTO PreviousArrearsRecords (BillID, CustomerID, PeriodID, RemainingAmount) VALUES (?, ?, ?, ?)");
-    $updAr = $conn->prepare("UPDATE PreviousArrearsRecords SET RemainingAmount = ?, CustomerID = ?, PeriodID = ? WHERE ArrearID = ?");
+    $checkAr = $conn->prepare("SELECT ArrearID FROM previousarrearsrecords WHERE BillID = ? LIMIT 1");
+    $insAr = $conn->prepare("INSERT INTO previousarrearsrecords (BillID, CustomerID, PeriodID, RemainingAmount) VALUES (?, ?, ?, ?)");
+    $updAr = $conn->prepare("UPDATE previousarrearsrecords SET RemainingAmount = ?, CustomerID = ?, PeriodID = ? WHERE ArrearID = ?");
 
     while($b = $getBills->fetch_assoc()){
         $billId = intval($b['BillID']);
@@ -58,9 +58,9 @@ try{
     }
 
     // Recompute aggregated PreviousArrears per bill
-    $allBills = $conn->query("SELECT BillID, CustomerID, PeriodID FROM Bill");
-    $sumStmt = $conn->prepare("SELECT COALESCE(SUM(RemainingAmount),0) as s FROM PreviousArrearsRecords WHERE CustomerID = ? AND PeriodID < ?");
-    $updPrev = $conn->prepare("UPDATE Bill SET PreviousArrears = ? WHERE BillID = ?");
+    $allBills = $conn->query("SELECT BillID, CustomerID, PeriodID FROM bill");
+    $sumStmt = $conn->prepare("SELECT COALESCE(SUM(RemainingAmount),0) as s FROM previousarrearsrecords WHERE CustomerID = ? AND PeriodID < ?");
+    $updPrev = $conn->prepare("UPDATE bill SET PreviousArrears = ? WHERE BillID = ?");
 
     while($b2 = $allBills->fetch_assoc()){
         $bid = intval($b2['BillID']);
