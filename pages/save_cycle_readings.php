@@ -11,26 +11,26 @@ if(!isset($_SESSION['EmployeeID'])){
    التأكد من الأعمدة
 ===================================== */
 
-$check1 = $conn->query("SHOW COLUMNS FROM Bill LIKE 'PreviousArrears'");
+$check1 = $conn->query("SHOW COLUMNS FROM bill LIKE 'PreviousArrears'");
 if($check1->num_rows == 0){
     $conn->query("
-    ALTER TABLE Bill
+    ALTER TABLE bill
     ADD PreviousArrears DECIMAL(12,2) DEFAULT 0
     ");
 }
 
-$check2 = $conn->query("SHOW COLUMNS FROM Bill LIKE 'PaidAmount'");
+$check2 = $conn->query("SHOW COLUMNS FROM bill LIKE 'PaidAmount'");
 if($check2->num_rows == 0){
     $conn->query("
-    ALTER TABLE Bill
+    ALTER TABLE bill
     ADD PaidAmount DECIMAL(12,2) DEFAULT 0
     ");
 }
 
-$check3 = $conn->query("SHOW COLUMNS FROM Bill LIKE 'RemainingAmount'");
+$check3 = $conn->query("SHOW COLUMNS FROM bill LIKE 'RemainingAmount'");
 if($check3->num_rows == 0){
     $conn->query("
-    ALTER TABLE Bill
+    ALTER TABLE bill
     ADD RemainingAmount DECIMAL(12,2) DEFAULT 0
     ");
 }
@@ -40,7 +40,7 @@ if($check3->num_rows == 0){
 ===================================== */
 
 $conn->query("
-CREATE TABLE IF NOT EXISTS PreviousArrearsRecords (
+CREATE TABLE IF NOT EXISTS previousarrearsrecords (
 
     ArrearID INT AUTO_INCREMENT PRIMARY KEY,
 
@@ -81,7 +81,7 @@ foreach($readings as $meterID => $current){
 
     $meter = $conn->query("
     SELECT CustomerID
-    FROM Meter
+    FROM meter
     WHERE MeterID = $meterID
     AND Status='Active'
     ")->fetch_assoc();
@@ -98,7 +98,7 @@ foreach($readings as $meterID => $current){
 
     $last = $conn->query("
     SELECT CurrentReading
-    FROM Reading
+    FROM reading
     WHERE MeterID = $meterID
     ORDER BY ReadingID DESC
     LIMIT 1
@@ -127,7 +127,7 @@ foreach($readings as $meterID => $current){
 
     $exists = $conn->query("
     SELECT ReadingID
-    FROM Reading
+    FROM reading
     WHERE MeterID = $meterID
     AND PeriodID = $periodID
     ");
@@ -141,7 +141,7 @@ foreach($readings as $meterID => $current){
         $readingID = intval($row['ReadingID']);
 
         $conn->query("
-        UPDATE Reading
+        UPDATE reading
         SET
             PreviousReading = $previous,
             CurrentReading = $current,
@@ -154,7 +154,7 @@ foreach($readings as $meterID => $current){
         /* ===== إضافة ===== */
 
         $conn->query("
-        INSERT INTO Reading
+        INSERT INTO reading
         (
             MeterID,
             CustomerID,
@@ -189,7 +189,7 @@ foreach($readings as $meterID => $current){
 
     $cust = $conn->query("
     SELECT UnitPrice
-    FROM Customer
+    FROM customer
     WHERE CustomerID = $customerID
     ")->fetch_assoc();
 
@@ -208,7 +208,7 @@ foreach($readings as $meterID => $current){
 
     $arrears = $conn->query("
     SELECT COALESCE(SUM(RemainingAmount),0) as total
-    FROM PreviousArrearsRecords
+    FROM previousarrearsrecords
     WHERE CustomerID = $customerID
     AND PeriodID < $periodID
     ")->fetch_assoc();
@@ -257,7 +257,7 @@ foreach($readings as $meterID => $current){
 
     $billCheck = $conn->query("
     SELECT BillID, PaidAmount
-    FROM Bill
+    FROM bill
     WHERE ReadingID = $readingID
     ");
 
@@ -289,7 +289,7 @@ foreach($readings as $meterID => $current){
         }
 
         $stmt = $conn->prepare("
-        UPDATE Bill
+        UPDATE bill
         SET
             Consumption = ?,
             Rate = ?,
@@ -322,7 +322,7 @@ foreach($readings as $meterID => $current){
 
         $checkAr = $conn->query("
         SELECT ArrearID
-        FROM PreviousArrearsRecords
+        FROM previousarrearsrecords
         WHERE BillID = $billID
         ");
 
@@ -333,7 +333,7 @@ foreach($readings as $meterID => $current){
             $arID = intval($ar['ArrearID']);
 
             $conn->query("
-            UPDATE PreviousArrearsRecords
+            UPDATE previousarrearsrecords
             SET RemainingAmount = $remainingAmount
             WHERE ArrearID = $arID
             ");
@@ -341,7 +341,7 @@ foreach($readings as $meterID => $current){
         } else {
 
             $conn->query("
-            INSERT INTO PreviousArrearsRecords
+            INSERT INTO previousarrearsrecords
             (
                 BillID,
                 CustomerID,
@@ -365,7 +365,7 @@ foreach($readings as $meterID => $current){
         ===================================== */
 
         $stmt = $conn->prepare("
-        INSERT INTO Bill
+        INSERT INTO bill
         (
             CustomerID,
             ReadingID,
@@ -412,7 +412,7 @@ foreach($readings as $meterID => $current){
         $billNumber = str_pad($billID, 6, '0', STR_PAD_LEFT);
 
         $upd = $conn->prepare("
-        UPDATE Bill
+        UPDATE bill
         SET BillNumber = ?
         WHERE BillID = ?
         ");
@@ -426,7 +426,7 @@ foreach($readings as $meterID => $current){
         ===================================== */
 
         $ins = $conn->prepare("
-        INSERT INTO PreviousArrearsRecords
+        INSERT INTO previousarrearsrecords
         (
             BillID,
             CustomerID,
