@@ -14,7 +14,7 @@ $message = "";
 /* =================================================================
    1. إنشاء الجداول المطلوبة (إذا لم تكن موجودة) لضمان حفظ البيانات
    ================================================================= */
-$conn->query("CREATE TABLE IF NOT EXISTS MeterReadings (
+$conn->query("CREATE TABLE IF NOT EXISTS meterreadings (
     ReadingID INT AUTO_INCREMENT PRIMARY KEY,
     MeterID INT,
     ReadingValue DECIMAL(12,2),
@@ -33,7 +33,7 @@ if(isset($_POST['save_reading'])){
     $date = date('Y-m-d');
     $emp_id = $_SESSION['EmployeeID'];
 
-    $stmt = $conn->prepare("INSERT INTO MeterReadings (MeterID, ReadingValue, ReadingDate, ReadingType, RecordedBy) VALUES (?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO meterreadings (MeterID, ReadingValue, ReadingDate, ReadingType, RecordedBy) VALUES (?, ?, ?, ?, ?)");
     $stmt->bind_param("idssi", $meter_id, $val, $date, $type, $emp_id);
     
     if($stmt->execute()) {
@@ -49,14 +49,14 @@ $loss_report = [];
 
 if($userRole === 'Admin') {
     // جلب آخر 5 قراءات للمقارنة اليومية
-    $daily_readings = $conn->query("SELECT r.*, m.MeterNumber FROM MeterReadings r JOIN Meter m ON r.MeterID = m.MeterID WHERE r.ReadingType='Daily' ORDER BY r.ReadingDate DESC LIMIT 5");
+    $daily_readings = $conn->query("SELECT r.*, m.MeterNumber FROM meterreadings r JOIN meter m ON r.MeterID = m.MeterID WHERE r.ReadingType='Daily' ORDER BY r.ReadingDate DESC LIMIT 5");
     
     // استعلام (تخيلي) لحساب الفاقد بناءً على ربط المشتركين بالعدادات الفرعية
     // ملاحظة: هذا يتطلب وجود علاقة SubMeterID في جدول المشتركين أو العدادات
     $loss_report = $conn->query("SELECT m.MeterNumber, 
-                                (SELECT ReadingValue FROM MeterReadings WHERE MeterID = m.MeterID AND ReadingType='Cycle' ORDER BY ReadingDate DESC LIMIT 1) as InputValue,
-                                (SELECT SUM(Amount) FROM Bill WHERE PeriodID = (SELECT MAX(PeriodID) FROM billing_period)) as TotalConsumption
-                                FROM Meter m WHERE m.Status='active'");
+                                (SELECT ReadingValue FROM meterreadings WHERE MeterID = m.MeterID AND ReadingType='Cycle' ORDER BY ReadingDate DESC LIMIT 1) as InputValue,
+                                (SELECT SUM(Amount) FROM bill WHERE PeriodID = (SELECT MAX(PeriodID) FROM billing_period)) as TotalConsumption
+                                FROM meter m WHERE m.Status='active'");
 }
 ?>
 
