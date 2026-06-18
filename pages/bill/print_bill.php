@@ -16,8 +16,8 @@ if($id == 0){
 
 // جلب بيانات الفاتورة والعميل
 $sql = "SELECT b.*, c.Name as CustomerName 
-        FROM Bill b 
-        JOIN Customer c ON b.CustomerID = c.CustomerID 
+        FROM bill b 
+        JOIN customer c ON b.CustomerID = c.CustomerID 
         WHERE b.BillID = $id";
 $result = $conn->query($sql);
 
